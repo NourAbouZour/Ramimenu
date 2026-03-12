@@ -6,13 +6,14 @@
   const LOCATION = 'Location: Nazlet esblnada abel ko3 Le bnzlak 3ala de3a be waj Vila ka3ky';
 
   // ----- Chat API -----
-  // Local (WAMP): PHP + .env. Deployed (Vercel): uses /api/chat — add OPENAI_API_KEY in Vercel → Settings → Environment Variables, then redeploy.
+  // API key in code so project works online without any server config (no .env, no Vercel env).
+  const OPENAI_API_KEY = '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';
   const isLocal = typeof window !== 'undefined' && window.location &&
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-  const CHAT_API_URL = isLocal ? 'api/chat.php' : '/api/chat';
+  const CHAT_API_URL = isLocal ? 'api/chat.php' : '';
   const STORAGE_KEY = 'menurami_openai_key';
   function getOpenAIKey() {
-    return localStorage.getItem(STORAGE_KEY) || '';
+    return localStorage.getItem(STORAGE_KEY) || OPENAI_API_KEY || '';
   }
   function setOpenAIKey(key) {
     if (key && key.trim()) localStorage.setItem(STORAGE_KEY, key.trim());
