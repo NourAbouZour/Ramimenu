@@ -5,8 +5,9 @@
   const OPENING_TIMES = 'Opening times: 12:00 PM to 1:00 AM (every day)';
   const LOCATION = 'Location: Nazlet esblnada abel ko3 Le bnzlak 3ala de3a be waj Vila ka3ky';
 
-  // ----- Chat API (GitHub Pages: key in code, no backend) -----
+  // ----- Chat API (GitHub Pages: key in code; optional backend URL if proxies fail) -----
   const OPENAI_API_KEY = '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';
+  const CHAT_BACKEND_URL = ''; // optional: if you host api/chat.php on free PHP (e.g. 000webhost), put that URL here
   const STORAGE_KEY = 'menurami_openai_key';
   function getOpenAIKey() {
     return localStorage.getItem(STORAGE_KEY) || OPENAI_API_KEY || '';
@@ -267,29 +268,42 @@ IMPORTANT: Respond in the SAME language the user writes in. If they write in Ara
   async function sendToOpenAI(messages) {
     const key = getOpenAIKey();
     if (!key) return null;
-    const apiUrl = 'https://api.openai.com/v1/chat/completions';
-    // OpenAI blocks direct browser requests (CORS). Proxy so it works on https://nourabouzour.github.io/Ramimenu/
-    const url = 'https://corsproxy.io/?' + encodeURIComponent(apiUrl);
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + key
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
-        max_tokens: 400,
-        temperature: 0.3
-      })
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error && err.error.message ? err.error.message : 'API error ' + res.status);
+    const backendUrl = (CHAT_BACKEND_URL || '').trim();
+    const body = { openingTimes: OPENING_TIMES, location: LOCATION, menuText: buildMenuText(), messages: messages };
+    if (backendUrl) {
+      const res = await fetch(backendUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'API error ' + res.status);
+      }
+      const data = await res.json();
+      return (data.reply && data.reply.trim()) || null;
     }
-    const data = await res.json();
-    const content = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-    return content ? content.trim() : null;
+    const apiUrl = 'https://api.openai.com/v1/chat/completions';
+    const payload = { model: 'gpt-4o-mini', messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages], max_tokens: 400, temperature: 0.3 };
+    const opts = { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key }, body: JSON.stringify(payload) };
+    const proxies = [
+      'https://proxy.corsfix.com/?' + encodeURIComponent(apiUrl),
+      'https://corsproxy.org/?' + encodeURIComponent(apiUrl),
+      'https://corsproxy.io/?' + encodeURIComponent(apiUrl)
+    ];
+    let lastErr;
+    for (const proxyUrl of proxies) {
+      try {
+        const res = await fetch(proxyUrl, opts);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error && err.error.message ? err.error.message : 'API error ' + res.status);
+        }
+        const data = await res.json();
+        const content = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+        return content ? content.trim() : null;
+      } catch (e) {
+        lastErr = e;
+        if (e.message && e.message !== 'Failed to fetch') throw e;
+      }
+    }
+    throw lastErr || new Error('Request failed');
   }
 
   let chatHistory = [];
@@ -331,8 +345,8 @@ IMPORTANT: Respond in the SAME language the user writes in. If they write in Ara
     } catch (e) {
       removeTypingIndicator();
       let msg = e.message || 'Something went wrong.';
-      if (msg === 'Failed to fetch') {
-        msg = 'Request blocked or network error. Check your connection and try again. If you use an ad blocker, try disabling it for this site.';
+      if (msg === 'Failed to fetch' || msg === 'Request failed') {
+        msg = 'Request blocked. Use a free backend: see SETUP.md — Option A (Cloudflare Worker, ~2 min) or Option B (PHP host). Then set CHAT_BACKEND_URL in script.js.';
       }
       addMessage('Error: ' + msg, false);
     }
