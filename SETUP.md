@@ -18,30 +18,27 @@ The app uses `api/chat.php` on localhost and reads `OPENAI_API_KEY` from `.env`.
 
 ## Production (Vercel / GitHub deploy)
 
-When you deploy from GitHub (e.g. to Vercel), the site runs on their servers — there is no `.env` file there. You **must** add the API key in the host’s dashboard:
+No server or dashboard setup needed. After you deploy (e.g. [Vercel](https://vercel.com) - import from GitHub):
 
-1. Deploy this repo to [Vercel](https://vercel.com) (import from GitHub).
-2. In the project: **Settings → Environment Variables**, add:
-   - **Name:** `OPENAI_API_KEY`
-   - **Value:** your OpenAI key (same as in `.env` locally)
-3. Redeploy once after saving the variable.
-
-The app automatically uses `/api/chat` when not on localhost (no `script.js` change needed). If you see **API error 405**, it usually meant the app was still calling `api/chat.php` on a host that doesn’t run PHP; the code now switches to `/api/chat` when deployed.
+1. Open your live site.
+2. Open the chat (bottom right).
+3. Type: **/setkey YOUR_OPENAI_KEY** (replace with your key from platform.openai.com).
+4. The key is stored only in that browser. Chat works from then on.
 
 ---
 
-## So the bot can answer “send me the location”
+## So the bot can answer "send me the location"
 
 In **script.js** at the top, set your real address:
 
 ```js
-const LOCATION = 'Location: Your full address or “Corner of X and Y”';
+const LOCATION = 'Location: Your full address or "Corner of X and Y"';
 ```
 
 Then the chatbot will use this when anyone asks for the location.
 
 ---
 
-## “Click here for location” link
+## "Click here for location" link
 
-In **index.html**, find the link with class `tagline-location` and set the `href` to your Google Maps place URL (Google Maps → Share → Copy link).
+In **index.html**, find the link with class `tagline-location` and set the `href` to your Google Maps place URL (Google Maps -> Share -> Copy link).

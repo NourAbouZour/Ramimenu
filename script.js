@@ -5,12 +5,11 @@
   const OPENING_TIMES = 'Opening times: 12:00 PM to 1:00 AM (every day)';
   const LOCATION = 'Location: Nazlet esblnada abel ko3 Le bnzlak 3ala de3a be waj Vila ka3ky';
 
-  // ----- Chat API: safe for public GitHub -----
-  // Auto-detect: use PHP on localhost (WAMP), use /api/chat when deployed (e.g. Vercel).
-  // On Vercel: set OPENAI_API_KEY in Project Settings → Environment Variables (never push .env).
+  // ----- Chat API -----
+  // Local (WAMP): use PHP backend and .env. Deployed: no server config needed — type /setkey YOUR_KEY in chat once (stored in browser only).
   const isLocal = typeof window !== 'undefined' && window.location &&
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-  const CHAT_API_URL = isLocal ? 'api/chat.php' : '/api/chat';
+  const CHAT_API_URL = isLocal ? 'api/chat.php' : '';
   const STORAGE_KEY = 'menurami_openai_key';
   function getOpenAIKey() {
     return localStorage.getItem(STORAGE_KEY) || '';
