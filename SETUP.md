@@ -8,7 +8,7 @@ Chat runs in the browser. **OpenAI API key** and **prompt** are in **`script.js`
    ```js
    const OPENAI_API_KEY = 'sk-your-key-here';
    ```
-2. Push to GitHub. Turn on **GitHub Pages**: repo **Settings → Pages →** Source: **Deploy from a branch** → Branch: **master** (or main) → Save.
+2. Push to GitHub. Turn on **GitHub Pages**: repo **Settings → Pages →** Source: **Deploy from a branch** → Branch: **master** → Save. (Only master branch is used; main was removed.)
 3. Open your site at `https://YOUR_USERNAME.github.io/YOUR_REPO/`
 
 Chat calls OpenAI from the browser with the key above. Optional: users can type `/setkey THEIR_KEY` to use their own key (stored in browser only).
