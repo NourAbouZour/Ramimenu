@@ -1,36 +1,17 @@
 # Menu Chat & API Key Setup
 
-**Important:** GitHub does not allow API keys in the repo (push is blocked). Put your key in `.env` locally (see below); `.env` is not pushed.
+The chatbot uses the **OpenAI API key in `script.js`** (visible in the repo). No Vercel, no .env, no backend required. Works on GitHub Pages or any static host.
 
-## Quick start (after clone)
+## Quick start
 
-1. Copy `.env.example` to `.env` in the project root.
-2. Open `.env` and set: `OPENAI_API_KEY=sk-your-key-here`
-3. Put the project in your WAMP `www` folder, start WAMP, open `http://localhost/menurami/`
-
-## WAMP (local)
-
-1. Copy the folder into your WAMP web root, e.g. `C:\wamp64\www\menurami`.
-
-2. Create a **`.env`** file in the project root with your OpenAI key:
+1. Open **`script.js`** and set your key at the top (search for `OPENAI_API_KEY`):
+   ```js
+   const OPENAI_API_KEY = 'sk-your-key-here';
    ```
-   OPENAI_API_KEY=sk-your-key-here
-   ```
-   (`.env` is in `.gitignore` and is never pushed.)
+2. Push to GitHub. Enable GitHub Pages (Settings → Pages → source: main branch) if you want it online.
+3. Or run locally: open `index.html` in a browser, or put the folder in WAMP and open `http://localhost/menurami/`
 
-3. Start WAMP and open: `http://localhost/menurami/`
-
-The app uses `api/chat.php` on localhost and reads `OPENAI_API_KEY` from `.env`. No code change needed.
-
-## Production (Vercel / GitHub deploy)
-
-1. Deploy from GitHub to [Vercel](https://vercel.com).
-2. In Vercel: **Settings → Environment Variables** → Add:
-   - **Name:** `OPENAI_API_KEY`
-   - **Value:** your OpenAI key (e.g. from platform.openai.com)
-3. **Redeploy** the project (Deployments → ⋮ → Redeploy).
-
-The chat uses `/api/chat` on the live site; the key is read from Vercel env only (never in code). GitHub blocks pushes that contain API keys, so the key cannot be stored in the repo.
+Chat runs entirely in the browser and calls OpenAI with the key above. Optional: users can type `/setkey THEIR_KEY` to override with a key stored only in their browser.
 
 ---
 

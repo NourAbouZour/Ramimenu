@@ -6,11 +6,9 @@
   const LOCATION = 'Location: Nazlet esblnada abel ko3 Le bnzlak 3ala de3a be waj Vila ka3ky';
 
   // ----- Chat API -----
-  // API key in code so project works online without any server config (no .env, no Vercel env).
+  // API key in code: chat works on GitHub Pages / any static host. No Vercel or .env needed.
   const OPENAI_API_KEY = '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';
-  const isLocal = typeof window !== 'undefined' && window.location &&
-    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-  const CHAT_API_URL = isLocal ? 'api/chat.php' : '';
+  const CHAT_API_URL = ''; // no backend: key above is used from the browser
   const STORAGE_KEY = 'menurami_openai_key';
   function getOpenAIKey() {
     return localStorage.getItem(STORAGE_KEY) || OPENAI_API_KEY || '';
@@ -271,12 +269,11 @@ IMPORTANT: Respond in the SAME language the user writes in. If they write in Ara
   async function sendToOpenAI(messages) {
     const apiUrl = (CHAT_API_URL || '').trim();
     if (apiUrl) {
-      const res = await fetch(apiUrl, {
+      const url = apiUrl.startsWith('http') ? apiUrl : new URL(apiUrl, window.location.href).href;
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          // Server enforces the strict "menu/location/hours only" rules.
-          // We still send context so the backend can answer accurately.
           openingTimes: OPENING_TIMES,
           location: LOCATION,
           menuText: buildMenuText(),
@@ -284,11 +281,20 @@ IMPORTANT: Respond in the SAME language the user writes in. If they write in Ara
         })
       });
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'API error ' + res.status);
+        if (res.status === 404 && getOpenAIKey()) {
+          // e.g. GitHub Pages with no serverless: fall back to direct OpenAI using /setkey
+        } else {
+          const err = await res.json().catch(() => ({}));
+          const msg = err.error || ('API error ' + res.status);
+          if (res.status === 404) {
+            throw new Error(msg + '. Deploy to Vercel and set OPENAI_API_KEY there, or type /setkey YOUR_KEY to use your key in this browser.');
+          }
+          throw new Error(msg);
+        }
+      } else {
+        const data = await res.json();
+        return (data.reply && data.reply.trim()) || null;
       }
-      const data = await res.json();
-      return (data.reply && data.reply.trim()) || null;
     }
     const key = getOpenAIKey();
     if (!key) return null;
@@ -335,7 +341,7 @@ IMPORTANT: Respond in the SAME language the user writes in. If they write in Ara
     const useBackend = (CHAT_API_URL || '').trim().length > 0;
     const key = getOpenAIKey();
     if (!useBackend && !key) {
-      addMessage('To use the chat, either set CHAT_API_URL in script.js to your backend, or type: /setkey YOUR_API_KEY (key stays in your browser only). Get a key at platform.openai.com.', false);
+      addMessage('To use the chat here, type: /setkey YOUR_OPENAI_KEY (stored only in this browser). Get a key at platform.openai.com. Or deploy to Vercel with OPENAI_API_KEY set.', false);
       return;
     }
 
@@ -381,9 +387,6 @@ IMPORTANT: Respond in the SAME language the user writes in. If they write in Ara
   }
 
   if (chatbotMessages && !chatbotMessages.innerHTML.trim()) {
-    const useBackend = (CHAT_API_URL || '').trim().length > 0;
-    addMessage(useBackend
-      ? 'Ask about our menu, opening hours, or location. English and Arabic supported.'
-      : 'Ask about our menu, opening hours, or location. English and Arabic supported. To add your API key (stored only in this browser), type: /setkey YOUR_KEY', false);
+    addMessage('Ask about our menu, opening hours, or location. English and Arabic supported.', false);
   }
 })();

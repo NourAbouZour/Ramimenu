@@ -3,8 +3,22 @@ declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
-
-if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+// CORS: allow same-origin and Vercel/static hosts so chat works from any deploy
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if ($origin === '' || preg_match('#^https?://(localhost|127\.0\.0\.1)(:\d+)?$#', $origin) || preg_match('#^https://[a-zA-Z0-9-]+\.(vercel\.app|github\.io)(\.[a-z]+)?$#', $origin)) {
+  if ($origin !== '') {
+    header('Access-Control-Allow-Origin: ' . $origin);
+  }
+  header('Access-Control-Allow-Methods: POST, OPTIONS');
+  header('Access-Control-Allow-Headers: Content-Type');
+  header('Access-Control-Max-Age: 86400');
+}
+$method = $_SERVER['REQUEST_METHOD'] ?? '';
+if ($method === 'OPTIONS') {
+  http_response_code(200);
+  exit;
+}
+if ($method !== 'POST') {
   http_response_code(405);
   echo json_encode(['error' => 'Method not allowed']);
   exit;
