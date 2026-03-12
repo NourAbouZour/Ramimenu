@@ -18,12 +18,13 @@ The app uses `api/chat.php` on localhost and reads `OPENAI_API_KEY` from `.env`.
 
 ## Production (Vercel / GitHub deploy)
 
-No server or dashboard setup needed. After you deploy (e.g. [Vercel](https://vercel.com) - import from GitHub):
+1. Deploy from GitHub to [Vercel](https://vercel.com).
+2. In Vercel: **Settings → Environment Variables** → Add:
+   - **Name:** `OPENAI_API_KEY`
+   - **Value:** your OpenAI key (e.g. from platform.openai.com)
+3. **Redeploy** the project (Deployments → ⋮ → Redeploy).
 
-1. Open your live site.
-2. Open the chat (bottom right).
-3. Type: **/setkey YOUR_OPENAI_KEY** (replace with your key from platform.openai.com).
-4. The key is stored only in that browser. Chat works from then on.
+The chat uses `/api/chat` on the live site; the key is read from Vercel env only (never in code). GitHub blocks pushes that contain API keys, so the key cannot be stored in the repo.
 
 ---
 

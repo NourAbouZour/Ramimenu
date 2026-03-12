@@ -6,10 +6,10 @@
   const LOCATION = 'Location: Nazlet esblnada abel ko3 Le bnzlak 3ala de3a be waj Vila ka3ky';
 
   // ----- Chat API -----
-  // Local (WAMP): use PHP backend and .env. Deployed: no server config needed — type /setkey YOUR_KEY in chat once (stored in browser only).
+  // Local (WAMP): PHP + .env. Deployed (Vercel): uses /api/chat — add OPENAI_API_KEY in Vercel → Settings → Environment Variables, then redeploy.
   const isLocal = typeof window !== 'undefined' && window.location &&
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-  const CHAT_API_URL = isLocal ? 'api/chat.php' : '';
+  const CHAT_API_URL = isLocal ? 'api/chat.php' : '/api/chat';
   const STORAGE_KEY = 'menurami_openai_key';
   function getOpenAIKey() {
     return localStorage.getItem(STORAGE_KEY) || '';
