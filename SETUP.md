@@ -1,6 +1,12 @@
 # Menu Chat & API Key Setup
 
-**Important:** The `.env` file (with your API key) is **not** pushed to GitHub on purpose — that would expose your key. Use the steps below for each environment.
+**Important:** GitHub does not allow API keys in the repo (push is blocked). Put your key in `.env` locally (see below); `.env` is not pushed.
+
+## Quick start (after clone)
+
+1. Copy `.env.example` to `.env` in the project root.
+2. Open `.env` and set: `OPENAI_API_KEY=sk-your-key-here`
+3. Put the project in your WAMP `www` folder, start WAMP, open `http://localhost/menurami/`
 
 ## WAMP (local)
 
