@@ -267,7 +267,10 @@ IMPORTANT: Respond in the SAME language the user writes in. If they write in Ara
   async function sendToOpenAI(messages) {
     const key = getOpenAIKey();
     if (!key) return null;
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    const apiUrl = 'https://api.openai.com/v1/chat/completions';
+    // OpenAI blocks direct browser requests (CORS). Proxy so it works on https://nourabouzour.github.io/Ramimenu/
+    const url = 'https://corsproxy.io/?' + encodeURIComponent(apiUrl);
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -329,7 +332,7 @@ IMPORTANT: Respond in the SAME language the user writes in. If they write in Ara
       removeTypingIndicator();
       let msg = e.message || 'Something went wrong.';
       if (msg === 'Failed to fetch') {
-        msg = 'Could not reach the server. Open this page from a proper URL (e.g. https://your-site.github.io/ or http://localhost/...) instead of opening the HTML file directly. Check your connection and try again.';
+        msg = 'Request blocked or network error. Check your connection and try again. If you use an ad blocker, try disabling it for this site.';
       }
       addMessage('Error: ' + msg, false);
     }
