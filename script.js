@@ -5,10 +5,8 @@
   const OPENING_TIMES = 'Opening times: 12:00 PM to 1:00 AM (every day)';
   const LOCATION = 'Location: Nazlet esblnada abel ko3 Le bnzlak 3ala de3a be waj Vila ka3ky';
 
-  // ----- Chat API -----
-  // API key in code: chat works on GitHub Pages / any static host. No Vercel or .env needed.
+  // ----- Chat API (GitHub Pages: key in code, no backend) -----
   const OPENAI_API_KEY = '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';
-  const CHAT_API_URL = ''; // no backend: key above is used from the browser
   const STORAGE_KEY = 'menurami_openai_key';
   function getOpenAIKey() {
     return localStorage.getItem(STORAGE_KEY) || OPENAI_API_KEY || '';
@@ -267,35 +265,6 @@ IMPORTANT: Respond in the SAME language the user writes in. If they write in Ara
   }
 
   async function sendToOpenAI(messages) {
-    const apiUrl = (CHAT_API_URL || '').trim();
-    if (apiUrl) {
-      const url = apiUrl.startsWith('http') ? apiUrl : new URL(apiUrl, window.location.href).href;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          openingTimes: OPENING_TIMES,
-          location: LOCATION,
-          menuText: buildMenuText(),
-          messages: messages
-        })
-      });
-      if (!res.ok) {
-        if (res.status === 404 && getOpenAIKey()) {
-          // e.g. GitHub Pages with no serverless: fall back to direct OpenAI using /setkey
-        } else {
-          const err = await res.json().catch(() => ({}));
-          const msg = err.error || ('API error ' + res.status);
-          if (res.status === 404) {
-            throw new Error(msg + '. Deploy to Vercel and set OPENAI_API_KEY there, or type /setkey YOUR_KEY to use your key in this browser.');
-          }
-          throw new Error(msg);
-        }
-      } else {
-        const data = await res.json();
-        return (data.reply && data.reply.trim()) || null;
-      }
-    }
     const key = getOpenAIKey();
     if (!key) return null;
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -338,10 +307,9 @@ IMPORTANT: Respond in the SAME language the user writes in. If they write in Ara
     addMessage(text, true);
     chatbotInput.value = '';
 
-    const useBackend = (CHAT_API_URL || '').trim().length > 0;
     const key = getOpenAIKey();
-    if (!useBackend && !key) {
-      addMessage('To use the chat here, type: /setkey YOUR_OPENAI_KEY (stored only in this browser). Get a key at platform.openai.com. Or deploy to Vercel with OPENAI_API_KEY set.', false);
+    if (!key) {
+      addMessage('API key missing. Edit OPENAI_API_KEY in script.js or type /setkey YOUR_KEY (stored in this browser only).', false);
       return;
     }
 
@@ -359,7 +327,11 @@ IMPORTANT: Respond in the SAME language the user writes in. If they write in Ara
       }
     } catch (e) {
       removeTypingIndicator();
-      addMessage('Error: ' + (e.message || 'Something went wrong. Check your API key and connection.'), false);
+      let msg = e.message || 'Something went wrong.';
+      if (msg === 'Failed to fetch') {
+        msg = 'Could not reach the server. Open this page from a proper URL (e.g. https://your-site.github.io/ or http://localhost/...) instead of opening the HTML file directly. Check your connection and try again.';
+      }
+      addMessage('Error: ' + msg, false);
     }
   }
 
@@ -387,6 +359,10 @@ IMPORTANT: Respond in the SAME language the user writes in. If they write in Ara
   }
 
   if (chatbotMessages && !chatbotMessages.innerHTML.trim()) {
-    addMessage('Ask about our menu, opening hours, or location. English and Arabic supported.', false);
+    const isFileProtocol = typeof window !== 'undefined' && window.location && window.location.protocol === 'file:';
+    const welcome = isFileProtocol
+      ? 'Chat works when the site is opened from a web address (e.g. GitHub Pages or http://localhost/...), not by opening the HTML file. Ask about menu, hours, or location.'
+      : 'Ask about our menu, opening hours, or location. English and Arabic supported.';
+    addMessage(welcome, false);
   }
 })();
