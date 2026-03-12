@@ -1,0 +1,9 @@
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+</IfModule>
+
+# Never allow downloading .env or other dotfiles
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
+
