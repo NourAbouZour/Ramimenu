@@ -1,36 +1,32 @@
 # Menu Chat & API Key Setup
 
-## WAMP (recommended if you use WAMP)
+**Important:** The `.env` file (with your API key) is **not** pushed to GitHub on purpose — that would expose your key. Use the steps below for each environment.
 
-1. Copy the folder into your WAMP web root, for example:
-   - `C:\wamp64\www\menurami`
+## WAMP (local)
 
-2. Put your OpenAI key in **`.env`** in the project root:
+1. Copy the folder into your WAMP web root, e.g. `C:\wamp64\www\menurami`.
+
+2. Create a **`.env`** file in the project root with your OpenAI key:
    ```
    OPENAI_API_KEY=sk-your-key-here
    ```
-   (`.env` is in `.gitignore` — it is not pushed to GitHub.)
+   (`.env` is in `.gitignore` and is never pushed.)
 
-3. In `script.js`, set the chat URL to the PHP endpoint:
-   ```js
-   const CHAT_API_URL = '/menurami/api/chat.php';
-   ```
-   If your folder name is different, change `/menurami/` to match.
+3. Start WAMP and open: `http://localhost/menurami/`
 
-4. Start WAMP (make sure it is green).
+The app uses `api/chat.php` on localhost and reads `OPENAI_API_KEY` from `.env`. No code change needed.
 
-5. Open in your browser:
-   - `http://localhost/menurami/`
+## Production (Vercel / GitHub deploy)
 
-The chatbot will call the PHP endpoint and read `OPENAI_API_KEY` from `.env`. The `.htaccess` blocks downloading `.env` from the web.
+When you deploy from GitHub (e.g. to Vercel), the site runs on their servers — there is no `.env` file there. You **must** add the API key in the host’s dashboard:
 
-## Production (Vercel)
+1. Deploy this repo to [Vercel](https://vercel.com) (import from GitHub).
+2. In the project: **Settings → Environment Variables**, add:
+   - **Name:** `OPENAI_API_KEY`
+   - **Value:** your OpenAI key (same as in `.env` locally)
+3. Redeploy once after saving the variable.
 
-1. Deploy this project to [Vercel](https://vercel.com) (connect your GitHub repo).
-2. In the project: **Settings → Environment Variables** add:
-   - Name: `OPENAI_API_KEY`
-   - Value: your key
-3. `CHAT_API_URL` in `script.js` is already `'/api/chat'` — it works on Vercel as-is.
+The app automatically uses `/api/chat` when not on localhost (no `script.js` change needed). If you see **API error 405**, it usually meant the app was still calling `api/chat.php` on a host that doesn’t run PHP; the code now switches to `/api/chat` when deployed.
 
 ---
 

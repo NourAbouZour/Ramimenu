@@ -6,9 +6,11 @@
   const LOCATION = 'Location: Nazlet esblnada abel ko3 Le bnzlak 3ala de3a be waj Vila ka3ky';
 
   // ----- Chat API: safe for public GitHub -----
-  // For WAMP/Apache (PHP): use the included endpoint at /api/chat.php (relative URL).
-  // For Vercel: set this to '/api/chat' to use the Node serverless function.
-  const CHAT_API_URL = 'api/chat.php';
+  // Auto-detect: use PHP on localhost (WAMP), use /api/chat when deployed (e.g. Vercel).
+  // On Vercel: set OPENAI_API_KEY in Project Settings → Environment Variables (never push .env).
+  const isLocal = typeof window !== 'undefined' && window.location &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const CHAT_API_URL = isLocal ? 'api/chat.php' : '/api/chat';
   const STORAGE_KEY = 'menurami_openai_key';
   function getOpenAIKey() {
     return localStorage.getItem(STORAGE_KEY) || '';

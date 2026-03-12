@@ -1,16 +1,35 @@
 /**
- * Serverless proxy for the menu chatbot.
- * Keeps your OpenAI API key off the frontend and out of GitHub.
- *
- * Deploy to Vercel:
- * 1. Push this repo to GitHub and import it in vercel.com.
- * 2. In Vercel project Settings → Environment Variables, add OPENAI_API_KEY.
- * 3. Your chat API will be: https://your-project.vercel.app/api/chat
- *
- * Then in script.js set: const CHAT_API_URL = 'https://your-project.vercel.app/api/chat';
+ * Vercel serverless proxy for the menu chatbot.
+ * Same behaviour as api/chat.php: uses openingTimes, location, menuText + messages.
+ * Set OPENAI_API_KEY in Vercel → Settings → Environment Variables.
  */
 
+function buildSystemPrompt(openingTimes, location, menuText) {
+  const ot = (openingTimes && String(openingTimes).trim()) || 'Opening times: (not provided)';
+  const loc = (location && String(location).trim()) || 'Location: (not provided)';
+  const menu = (menuText && String(menuText).trim()) || 'Menu: (not provided)';
+  return `You are the assistant for a cafe & restaurant.
+
+IMPORTANT RULES (must follow):
+- You must ONLY answer questions about:
+  1) Menu items (food/drinks): names, descriptions, and prices.
+  2) Opening hours / opening times.
+  3) Location, address, or how to find the restaurant.
+- If the user asks about anything else (reservations, delivery, jobs, complaints, stories, jokes, general knowledge, etc.), you must politely refuse and say you can only help with menu, opening times, and location.
+- Be kind, respectful, and concise.
+- Respond in the SAME language as the user (Arabic ↔ Arabic, English ↔ English).
+- Use ONLY the information provided below. Do not invent items, prices, hours, or address details.
+
+INFORMATION YOU MAY USE:
+${ot}
+${loc}
+${menu}`;
+}
+
 module.exports = async (req, res) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
@@ -24,17 +43,22 @@ module.exports = async (req, res) => {
 
   let body;
   try {
-    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
   } catch {
     res.status(400).json({ error: 'Invalid JSON' });
     return;
   }
 
-  const { systemPrompt, messages } = body || {};
-  if (!systemPrompt || !Array.isArray(messages)) {
-    res.status(400).json({ error: 'Missing systemPrompt or messages' });
+  const messages = body.messages;
+  if (!Array.isArray(messages)) {
+    res.status(400).json({ error: 'Missing messages' });
     return;
   }
+
+  const openingTimes = body.openingTimes;
+  const location = body.location;
+  const menuText = body.menuText;
+  const systemPrompt = buildSystemPrompt(openingTimes, location, menuText);
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
