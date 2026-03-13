@@ -250,6 +250,22 @@ body {
   border-bottom-color: var(--gold);
 }
 
+.tagline-phone {
+  display: block;
+  margin-top: 0.35rem;
+  font-family: var(--body-serif);
+  font-size: 0.85rem;
+  color: var(--gold-light);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.tagline-phone:hover {
+  color: var(--text-gold);
+  border-bottom-color: var(--gold);
+}
+
 .cover-decoration {
   position: absolute;
   bottom: 1rem;
