@@ -6,8 +6,8 @@
   const LOCATION = 'Location: Nazlet esblnada abel ko3 Le bnzlak 3ala de3a be waj Vila ka3ky';
 
   // ----- Chat API (GitHub Pages: key in code; optional backend URL if proxies fail) -----
-  const OPENAI_API_KEY = '';
-const CHAT_BACKEND_URL = 'https://ramimenu.nour-abouzour.workers.dev';
+  const OPENAI_API_KEY = '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';
+  const CHAT_BACKEND_URL = 'https://ramimenu.nour-abouzour.workers.dev';
   const STORAGE_KEY = 'menurami_openai_key';
   function getOpenAIKey() {
     return localStorage.getItem(STORAGE_KEY) || OPENAI_API_KEY || '';
@@ -324,8 +324,9 @@ IMPORTANT: Respond in the SAME language the user writes in. If they write in Ara
     addMessage(text, true);
     chatbotInput.value = '';
 
+    const useBackend = (CHAT_BACKEND_URL || '').trim().length > 0;
     const key = getOpenAIKey();
-    if (!key) {
+    if (!useBackend && !key) {
       addMessage('API key missing. Edit OPENAI_API_KEY in script.js or type /setkey YOUR_KEY (stored in this browser only).', false);
       return;
     }
